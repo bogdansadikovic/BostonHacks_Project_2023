@@ -16,54 +16,83 @@ st.set_page_config(
     page_icon="🌌",
 )
 
-def colored_histogram(values, colors):
-    n_bins = len(values)
-
+def colored_histogram(color_list):
     fig, ax = plt.subplots()
-    for i in range(n_bins):
-        ax.bar(i, 1, color=colors[i], edgecolor='white')
 
-    ax.set_xlim(0, n_bins)
-    ax.set_ylim(0, 1)
-    ax.axis('off')  # Turn off the axis
+    # Use the range of values as x-coordinates for the bars
+    x_values = range(len(color_list))
+
+    ones_list = [1] * len(color_list)
+
+    # Create bars with heights from the 'values' list and colors from the 'color_list'
+    bars = ax.bar(x_values, ones_list, color=color_list)
+    ax.set_facecolor('#800000')
+
+    plt.axis('off')
+    plt.show()
 
     return fig
 
-def writeDB(key,list):
+def writeDB(key,color_list):
     client = pymongo.MongoClient("mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
-    mydb = client["SoulSketch"]
-    mycol = mydb["User"]
-    mydict = {"Username": key, "History": list}
-    x = mycol.insert_one(mydict)
+    db = client["SoulSketch"]
+    db.User.create_index([('Username', pymongo.ASCENDING)], unique=True)
+
+    # Inserting a document with a unique username
+    try:
+      #  if key != '':
+            db.User.insert_one({"Username": key, "History": color_list})
+    except pymongo.errors.DuplicateKeyError:
+        #updates History field is the User exists already
+        db.User.update_one({"Username": key}, {"$set": {"History": color_list}})
+
+def existingUser(key):
+    client = pymongo.MongoClient(
+        "mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
+    db = client["SoulSketch"]
+    col = db.User
+    cursor = col.find_one({'Username': key})
+    if cursor is None:
+        return False
+    else:
+        return True
 
 def readDB(key):
-
-
-    return list
-
-
-@st.cache_data
-def get_color_history():
-    return []
-
+    client = pymongo.MongoClient(
+        "mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
+    db = client["SoulSketch"]
+    col = db.User
+    cursor = col.find_one({'Username': key})
+    colorList = cursor.get("History")
+    st.write(colorList) #debug
+    client.close()
+    return colorList
 
 def main():
     #Title and Header Creation
-    st.title('_Soul_:blue[_Sketch_]')
-    st.header('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
+    st.markdown("<h1 style='text-align: center; color: white;'>SoulSketch</h1>", unsafe_allow_html=True)
+    st.write('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
     st.header('Enter your username')
     #User Input for Text Input
     username = st.text_input('Your username will be required to store your emotional history')
     #If Username has a value, then it displays the Username
     if username:
-        st.write(f'Your username is _:red[{username}]_')
+        exists = existingUser(username)
+        if exists:
+            st.write(f'Welcome back _:red[{username}]_!')
+
+        else:
+            st.write(f'Your new username is _:red[{username}]_')
 
     #Color Selection
-    st.header('Select a color that represents your mood today')
+    st.header('Select an emotion that represents your mood today')
 
     color = ''
     if 'colors' not in st.session_state:
-        st.session_state.colors = []
+        if existingUser(username):
+            st.session_state.colors = readDB(username)
+        else:
+            st.session_state.colors = []
 
     col1,col2,col3 = st.columns(3)
 
@@ -95,6 +124,8 @@ def main():
     orange_string = f'Your emotional color today tends towards orange, indicating _:{color.lower()}[ANXIETY]_, its crucial to approach this emotion with effective strategies to alleviate and manage _:{color.lower()}[ANXIETY]_ for your overall well-being. When _:{color.lower()}[ANXIETY]_ arises, acknowledge it without judgment and recognize that it is a common aspect of human experience. Implement grounding techniques, such as focused breathing or mindfulness, to create a sense of presence in the moment. Identify specific triggers of your _:{color.lower()}[ANXIETY]_, whether they relate to work, relationships, or other aspects of life, and develop practical steps to address them. Establish a routine that provides structure and predictability, which can contribute to a sense of control. Incorporate relaxation activities into your daily life, such as engaging in hobbies or spending time in nature, to promote a calming effect. Seek support from friends, family, or colleagues, sharing your feelings and concerns to gain perspective and assistance. Focus on realistic goals and expectations, recognizing that perfection is not achievable, and its okay to set boundaries. Engage in regular physical activity, as exercise has been shown to be beneficial for reducing _:{color.lower()}[ANXIETY]_. Consider exploring _:{color.lower()}[ANXIETY]_ management techniques, such as meditation or deep-breathing exercises, to foster a sense of tranquility. If _:{color.lower()}[ANXIETY]_ becomes overwhelming, consider seeking professional support from a mental health professional who can provide guidance and coping strategies. Remember that managing _:{color.lower()}[ANXIETY]_ is an ongoing process, and incorporating small, consistent changes can contribute to a more balanced and resilient life.'
     blue_string = f'If your emotional color tends towards blue, indicating a predisposition towards _:{color.lower()}[TRANQUILITY]_, its important to foster and embrace this serene emotion for your overall well-being. When you experience _:{color.lower()}[TRANQUILITY]_, savor the tranquility of the moment, allowing it to wash over you. Engage in activities that promote relaxation and peace, such as meditation or gentle stretching exercises. Create a calming environment in your daily life, incorporating soothing colors and elements that contribute to a sense of serenity. Establish routines that provide stability and predictability, contributing to a calm and organized mindset. Prioritize self-care, making time for activities that bring you joy and relaxation. Seek out nature or bodies of water, as the calming effect of blue is often associated with the sky and the ocean. Practice deep-breathing exercises to maintain a steady and calm presence in challenging situations. Surround yourself with supportive and positive influences, fostering an environment that promotes tranquility. Consider mindful practices, such as journaling or gratitude exercises, to center your thoughts and promote a sense of calm reflection. Embrace a healthy work-life balance, ensuring that you allocate time for both productivity and relaxation. Remember that _:{color.lower()}[TRANQUILITY]_ is a valuable state of being, and cultivating it is an ongoing process that contributes to a more balanced and harmonious life.'
 
+
+
     #Creates a title based on the color
     if color != '':
         st.title(f'Your emotional color of the day is _:{color.lower()}[{color}]_')
@@ -112,12 +143,16 @@ def main():
     elif color == 'BLUE':
         st.write(blue_string)
     #if color has been decided, then append to the persisting colors list
-    if color != '':
+    if color != '' and username != '':
         st.session_state.colors.append(color)
+        writeDB(username,st.session_state.colors)
     #creates a histogram based on the colors list
 
+
     if color != '':
-        st.pyplot(colored_histogram(range(len(st.session_state.colors)), st.session_state.colors))
+        st.header('Below is a chart of your emotional _:blue[history]_. Each bar represents one entry.')
+        st.pyplot(colored_histogram(st.session_state.colors))
+
 
     if st.session_state.colors != []:
         user_prompt = st.text_input('Enter a text prompt that you think represents your soul')
