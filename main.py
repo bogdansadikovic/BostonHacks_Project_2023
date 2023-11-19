@@ -64,7 +64,6 @@ def readDB(key):
     col = db.User
     cursor = col.find_one({'Username': key})
     colorList = cursor.get("History")
-    st.write(colorList) #debug
     client.close()
     return colorList
 
@@ -73,24 +72,28 @@ def main():
     st.markdown("<h1 style='text-align: center; color: white;'>SoulSketch</h1>", unsafe_allow_html=True)
     st.write('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
     st.header('Enter your username')
-    #User Input for Text Input
-    username = st.text_input('Your username will be required to store your emotional history')
-    #If Username has a value, then it displays the Username
-    if username:
-        exists = existingUser(username)
+
+    if 'username' not in st.session_state:
+        st.session_state.username = ''
+
+    username_input = st.text_input('Your username will be required to store your emotional history')
+
+    if username_input != st.session_state.username:
+        st.session_state.username = username_input
+        exists = existingUser(st.session_state.username)
         if exists:
-            st.write(f'Welcome back _:red[{username}]_!')
-
+            st.write(f'Welcome back {st.session_state.username}!')
+            st.session_state.colors = readDB(st.session_state.username)
         else:
-            st.write(f'Your new username is _:red[{username}]_')
+            st.write(f'Your new username is {st.session_state.username}')
+            st.session_state.colors = []
 
-    #Color Selection
     st.header('Select an emotion that represents your mood today')
 
     color = ''
     if 'colors' not in st.session_state:
-        if existingUser(username):
-            st.session_state.colors = readDB(username)
+        if existingUser(st.session_state.username):
+            st.session_state.colors = readDB(st.session_state.username)
         else:
             st.session_state.colors = []
 
@@ -143,9 +146,9 @@ def main():
     elif color == 'BLUE':
         st.write(blue_string)
     #if color has been decided, then append to the persisting colors list
-    if color != '' and username != '':
+    if color != '' and st.session_state.username != '':
         st.session_state.colors.append(color)
-        writeDB(username,st.session_state.colors)
+        writeDB(st.session_state.username,st.session_state.colors)
     #creates a histogram based on the colors list
 
 
