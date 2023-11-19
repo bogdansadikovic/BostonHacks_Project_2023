@@ -15,6 +15,7 @@ def interfaceworkerdict(days_colors):
     for color in color_percentages:
         percentage_string += (color + ": " + str(color_percentages[color]) + '% ,')
 
+    #converts all instances of colors to their hex counterpart for ease of DALLE
     percentage_string = percentage_string.replace('RED','#F7251C')
     percentage_string = percentage_string.replace('GREEN', '#227F19')
     percentage_string = percentage_string.replace('BLUE', ' #000EF9')
@@ -39,4 +40,13 @@ def interfaceworkerlist(days_colors):
 
     for color in color_percentages:
         percentage_string += (color + ": " + str(color_percentages[color]) + '% ,')
+
+    #converts all instances of colors to their hex counterpart for ease of DALLE
+    percentage_string = percentage_string.replace('RED','#F7251C')
+    percentage_string = percentage_string.replace('GREEN', '#227F19')
+    percentage_string = percentage_string.replace('BLUE', ' #000EF9')
+    percentage_string = percentage_string.replace('VIOLET', '#E886EB')
+    percentage_string = percentage_string.replace('ORANGE', '#FBA72F')
+    percentage_string = percentage_string.replace('GREY', '#808080')
+    
     return percentage_string
