@@ -1,4 +1,6 @@
+#STRING GENERATOR BY YONISH, THIS SPECIFIC FILE IS NOT USED BUT THE FUNCTIONS ARE USED IN STRINGGENERATOR.PY
 def interfaceworkerdict(days_colors):
+    #Takes in a dict of strings with colors, merges duplicates, and outputs a string representing the percentages that make up the dict
     count_colors = {}
     color_percentages = {}
     percentage_string = ""
@@ -15,6 +17,7 @@ def interfaceworkerdict(days_colors):
     return percentage_string
     
 def interfaceworkerlist(days_colors):
+        #Takes in a list of strings with colors, merges duplicates, and outputs a string representing the percentages that make up the list
     count_colors = {}
     color_percentages = {}
     percentage_string = ""
