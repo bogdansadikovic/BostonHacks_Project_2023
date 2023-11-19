@@ -12,7 +12,7 @@ def interfaceworkerdict(days_colors):
                                                 
     for color in color_percentages:
         percentage_string += (color + ": " + str(color_percentages[color]) + '% ,')
-    print(percentage_string)
+    return percentage_string
     
 def interfaceworkerlist(days_colors):
     count_colors = {}
@@ -28,7 +28,7 @@ def interfaceworkerlist(days_colors):
                                                 
     for color in color_percentages:
         percentage_string += (color + ": " + str(color_percentages[color]) + '% ,')
-    print(percentage_string)
+    return percentage_string
     
     
 
