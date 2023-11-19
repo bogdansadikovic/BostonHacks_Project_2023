@@ -11,20 +11,21 @@ from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
 
+#sets page title and icon
 st.set_page_config(
     page_title="SoulSketch",
     page_icon="🌌",
 )
 
+#generates a color history chart using matplotlib
 def colored_histogram(color_list):
     fig, ax = plt.subplots()
 
     # Use the range of values as x-coordinates for the bars
     x_values = range(len(color_list))
-
     ones_list = [1] * len(color_list)
 
-    # Create bars with heights from the 'values' list and colors from the 'color_list'
+    # Create bars with identical heights from the 'ones_list' list and colors from the 'color_list'
     bars = ax.bar(x_values, ones_list, color=color_list)
     ax.set_facecolor('#800000')
 
@@ -33,6 +34,7 @@ def colored_histogram(color_list):
 
     return fig
 
+#function to write new users or update existing users to mongoDB
 def writeDB(key,color_list):
     client = pymongo.MongoClient("mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
     db = client["SoulSketch"]
@@ -40,12 +42,13 @@ def writeDB(key,color_list):
 
     # Inserting a document with a unique username
     try:
-      #  if key != '':
+      #  inserts new document
             db.User.insert_one({"Username": key, "History": color_list})
     except pymongo.errors.DuplicateKeyError:
         #updates History field is the User exists already
         db.User.update_one({"Username": key}, {"$set": {"History": color_list}})
 
+#returns true if the user exists in the database already
 def existingUser(key):
     client = pymongo.MongoClient(
         "mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
@@ -57,6 +60,7 @@ def existingUser(key):
     else:
         return True
 
+#reads the color history of an existing user and returns it
 def readDB(key):
     client = pymongo.MongoClient(
         "mongodb+srv://Bogdan:BogiBogi@therapyapp.1zqbylp.mongodb.net/?retryWrites=true&w=majority")
@@ -67,38 +71,45 @@ def readDB(key):
     client.close()
     return colorList
 
+#main function that is essentially the entire webapp
 def main():
     #Title and Header Creation
     st.markdown("<h1 style='text-align: center; color: white;'>SoulSketch</h1>", unsafe_allow_html=True)
     st.write('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
     st.header('Enter your username')
 
+    #username wont be declared intitially, so it stores it in the session state
     if 'username' not in st.session_state:
         st.session_state.username = ''
-
+    #user text input for username
     username_input = st.text_input('Your username will be required to store your emotional history')
 
+    #detects when the username changes determines how to initialize colors_list
     if username_input != st.session_state.username:
         st.session_state.username = username_input
         exists = existingUser(st.session_state.username)
         if exists:
+            #if user exists read data
             st.write(f'Welcome back {st.session_state.username}!')
             st.session_state.colors = readDB(st.session_state.username)
         else:
+            #if new create brand new
             st.write(f'Your new username is {st.session_state.username}')
             st.session_state.colors = []
 
     st.header('Select an emotion that represents your mood today')
 
     color = ''
+    
+    #if colors not in the session, declares it, this code seems redundant since colors is already handled based on username, but it doesnt work without it
     if 'colors' not in st.session_state:
         if existingUser(st.session_state.username):
             st.session_state.colors = readDB(st.session_state.username)
         else:
             st.session_state.colors = []
 
+    #button creation
     col1,col2,col3 = st.columns(3)
-
     r1 = col1.button(':red[ANGRY]')
     r2 = col1.button(':green[HAPPY]')
     r3 = col2.button(':violet[SAD]')
@@ -151,12 +162,12 @@ def main():
         writeDB(st.session_state.username,st.session_state.colors)
     #creates a histogram based on the colors list
 
-
+    #if the color is chose, then it prints the color history chart
     if color != '':
         st.header('Below is a chart of your emotional _:blue[history]_. Each bar represents one entry.')
         st.pyplot(colored_histogram(st.session_state.colors))
 
-
+    #OpenAI DALLE-3 prompt generation logic, if it succeeds it creates a image widget using the URL of the DALLE-3 Image
     if st.session_state.colors != []:
         user_prompt = st.text_input('Enter a text prompt that you think represents your soul')
         if user_prompt:
