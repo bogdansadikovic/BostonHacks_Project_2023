@@ -1,4 +1,4 @@
-
+#PYMONGO TEST USED BY BOGDAN, NOT USED IN FULL PROGRAM
 import pymongo
 from pymongo.mongo_client import MongoClient
 
