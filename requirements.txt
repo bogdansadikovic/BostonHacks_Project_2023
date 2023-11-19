@@ -1,0 +1,13 @@
+# requirements.txt
+
+# MongoDB driver for Python
+pymongo==3.12.0
+
+# Create interactive web apps with Python
+streamlit==1.18.0
+
+# Plotting library for Python
+matplotlib==3.4.3
+
+# HTTP library for making requests in Python
+requests==2.26.0
