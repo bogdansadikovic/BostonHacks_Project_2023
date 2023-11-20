@@ -75,7 +75,7 @@ def readDB(key):
 def main():
     #Title and Header Creation
     title1,title2,title3 = st.columns(3)
-    st.title2("Soul:blue[Sketch]")
+    title2.title("Soul:blue[Sketch]")
     st.write('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
     st.header('Enter your username')
 
