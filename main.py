@@ -74,7 +74,8 @@ def readDB(key):
 #main function that is essentially the entire webapp
 def main():
     #Title and Header Creation
-    st.markdown("<h1 style='text-align: center; color: white;'>SoulSketch</h1>", unsafe_allow_html=True)
+    title1,title2,title3 = st.columns(3)
+    st.title2("Soul:blue[Sketch]")
     st.write('Welcome! _SoulSketch_ is a webapp designed to create an image of your emotional soul. Every day, pick a mood that you feel represents you, and your entire emotional history will be used. Your emotions will serve as the :violet[paint] pallete that will paint your :blue[_SOUL_].')
     st.header('Enter your username')
 
